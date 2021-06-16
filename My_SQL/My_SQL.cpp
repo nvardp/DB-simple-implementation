@@ -7,15 +7,15 @@ MySql::MySql()
 	{
 		if (fs::path(entry.path()).extension() == ".txt")
 		{
-			fstream FDB;
-			string fileName = (entry.path()).string();
+			std::fstream FDB;
+			std::string fileName = (entry.path()).string();
 			FDB.open(fileName);
-			string line;
+			std::string line;
 			getline(FDB, line);
 			Entry row;
 			Table table;
-			string name;
-			string value;
+			std::string name;
+			std::string value;
 			while (!FDB.eof())
 			{
 				while (line != "^")
@@ -24,7 +24,7 @@ MySql::MySql()
 					{
 						name = get_col_name(line);
 						value = get_col_value(line);
-						row.insert(std::pair<string, string>(name, value));
+						row.insert(std::pair<std::string, std::string>(name, value));
 					}
 					getline(FDB, line);
 				}
@@ -33,26 +33,26 @@ MySql::MySql()
 				FDB >> line;
 			}
 			FDB.close();
-			string TableName = fileName.substr(fileName.find_last_of("\\/") + 1, fileName.size());
+			std::string TableName = fileName.substr(fileName.find_last_of("\\/") + 1, fileName.size());
 			TableName.erase(TableName.size() - 4, 4);
-			tables.insert(std::pair<string, Table>(TableName, table));
+			tables.insert(std::pair<std::string, Table>(TableName, table));
 		}
 	}
 }
 
-string MySql::get_col_name(string other)
+std::string MySql::get_col_name(std::string other)
 {
 	return other.substr(0, other.find("="));
 }
-string MySql::get_col_value(string other)
+std::string MySql::get_col_value(std::string other)
 {
-	string column = other.substr(other.find("="), other.find(","));
+	std::string column = other.substr(other.find("="), other.find(","));
 	column.erase(0, 1);
 	if (column.back() == ',')
 		column.erase(column.size() - 1, 1);
 	return column;
 }
-string MySql::get_path_of_exe()
+std::string MySql::get_path_of_exe()
 {
 	char buffer[MAX_PATH];
 	GetModuleFileNameA(NULL, buffer, MAX_PATH);
@@ -71,7 +71,7 @@ bool MySql::isQueryOK(const std::string& query)
 	else if (firstWord != _CREATE_CMD && firstWord != _INSERT_CMD
 		&& firstWord != _DROP_CMD && firstWord != _SELECT_CMD && firstWord != _DELETE_CMD && firstWord != _UPDATE_CMD)
 	{
-		cout << "No such command. ";
+		std::cout << "No such command. ";
 		return false;
 	}
 	else if ((query.substr(query.find(" "), -1)) == "")
@@ -79,7 +79,7 @@ bool MySql::isQueryOK(const std::string& query)
 	else return true;
 
 }
-void MySql::Execute(const string& other)
+void MySql::Execute(const std::string& other)
 {
 	auto _QUERY = parse(other);
 	if (_QUERY[cmd] == _CREATE_CMD)
@@ -87,31 +87,31 @@ void MySql::Execute(const string& other)
 		if (!exist(tables, (_QUERY)[name]))
 		{
 			create_file((_QUERY)[name]);
-			tables.insert(std::pair<string, Table>(_QUERY[name], {}));
-			cout << "created" << endl;
+			tables.insert(std::pair<std::string, Table>(_QUERY[name], {}));
+			std::cout << "created" << std::endl;
 		}
-		else cout << "already exist" << endl; // 
+		else std::cout << "already exist" << std::endl; // 
 	}
 	else if (_QUERY[cmd] == _INSERT_CMD)
 	{
 		if (exist(tables, (_QUERY)[name]))
 		{
 			Insert(_QUERY);
-			cout << "inserted " << _QUERY.size() - 2 << " column(s)." << endl;
+			std::cout << "inserted " << _QUERY.size() - 2 << " column(s)." << std::endl;
 		}
-		else cout << "Table does not exist" << endl;
+		else std::cout << "Table does not exist" << std::endl;
 	}
 	else if (_QUERY[cmd] == _DROP_CMD)
 	{
 		if (!drop_table(_QUERY))
-			cout << "Table successfully deleted" << endl;
-		else cout << "Table does not exist" << endl;
+			std::cout << "Table successfully deleted" << std::endl;
+		else std::cout << "Table does not exist" << std::endl;
 	}
 	else if (_QUERY[cmd] == _DELETE_CMD)
 	{
 		if (exist(tables, (_QUERY)[name]))
 		{
-			cout << delete_all_found(_QUERY) << " row(s) successfully deleted.\n";
+			std::cout << delete_all_found(_QUERY) << " row(s) successfully deleted.\n";
 		}
 	}
 	else if (_QUERY[cmd] == _SELECT_CMD)
@@ -125,11 +125,11 @@ void MySql::Execute(const string& other)
 	{
 		if (exist(tables, (_QUERY)[name]))
 		{
-			cout << update(_QUERY) << " row(s) successfully updated.\n";  ;
+			std::cout << update(_QUERY) << " row(s) successfully updated.\n";  ;
 		}
 	}
 }
-vector<string> MySql::parse(string other)
+std::vector<std::string> MySql::parse(std::string other)
 {
 	Query _QUERY;
 	while (!other.empty())
@@ -141,15 +141,15 @@ vector<string> MySql::parse(string other)
 	return _QUERY;
 }
 
-bool MySql::exist(const std::map<string, Table>& table, const string& name) const
+bool MySql::exist(const std::map<std::string, Table>& table, const std::string& name) const
 {
 	if (table.find(name) != table.end())
 		return true;
 	return false;
 }
-void MySql::create_file(const string& name)
+void MySql::create_file(const std::string& name)
 {
-	ofstream File;
+	std::ofstream File;
 
 	File.open(path + name + ".txt");
 }
@@ -160,7 +160,7 @@ void MySql::Insert(const Query& query)
 }
 void MySql::update_map(const Query& query)
 {
-	std::map<string, Table>::iterator itr;
+	std::map<std::string, Table>::iterator itr;
 	itr = tables.find(query[name]);
 
 	if (itr != tables.end())
@@ -168,7 +168,7 @@ void MySql::update_map(const Query& query)
 		Entry row;
 		for (int i = data_start; i < query.size(); i++)
 		{
-			row.insert(std::pair<string, string>(get_col_name(query[i]), get_col_value(query[i])));
+			row.insert(std::pair<std::string, std::string>(get_col_name(query[i]), get_col_value(query[i])));
 		}
 		Table table;
 		table.push_back(row);
@@ -177,13 +177,13 @@ void MySql::update_map(const Query& query)
 }
 void MySql::write_in_file(const Query& vec)
 {
-	ofstream FDB;
+	std::ofstream FDB;
 
 	FDB.open(path + vec[name] + ".txt", std::ios_base::app);
 	FDB << "\n^\n";
 	for (int i = data_start; i < vec.size(); i++)
 	{
-		FDB << get_col_name(vec[i]) << "=" << get_col_value(vec[i]) << endl;
+		FDB << get_col_name(vec[i]) << "=" << get_col_value(vec[i]) << std::endl;
 	}
 	FDB << "^\n";
 }
@@ -199,13 +199,13 @@ bool MySql::drop_table(const Query& query)
 }
 int MySql::delete_all_found(const Query& query)
 {
-	std::map<string, Table>::iterator itr;
+	std::map<std::string, Table>::iterator itr;
 	itr = tables.find(query[name]);
 	int counter = 0;
 	if (itr != tables.end())
 	{
 		auto table = itr->second; //vector of map
-		std::map<string, string>::iterator itr_table;
+		std::map<std::string, std::string>::iterator itr_table;
 		int i = 0;
 		for (; i < table.size(); i++)
 		{
@@ -221,14 +221,14 @@ int MySql::delete_all_found(const Query& query)
 	}
 	return counter;
 }
-void MySql::write_after_operation(const Table& other, const string& name)
+void MySql::write_after_operation(const Table& other, const std::string& name)
 {
-	ofstream FDB;
+	std::ofstream FDB;
 	FDB.open(path + name + ".txt");
 
 	for (int i = 0; i < other.size(); i++)
 	{
-		for (map<string, string>::const_iterator it = other[i].begin(); it != other[i].end(); ++it)
+		for (std::map<std::string, std::string>::const_iterator it = other[i].begin(); it != other[i].end(); ++it)
 		{
 			FDB << it->first << "=" << it->second << "\n";
 		}
@@ -239,7 +239,7 @@ void MySql::show_table(const Query& other)
 {
 	if (data_start == other.size())
 	{
-		cout << "chose * or where";
+		std::cout << "chose * or where";
 		return;
 	}
 	auto iter = tables.find(other[name]);
@@ -250,22 +250,22 @@ void MySql::show_table(const Query& other)
 		for (size_t i = 0; i < iter->second.size(); i++)
 		{
 
-			for (map<string, string>::const_iterator it = iter->second[i].begin(); it != iter->second[i].end(); ++it)
+			for (std::map<std::string, std::string>::const_iterator it = iter->second[i].begin(); it != iter->second[i].end(); ++it)
 			{
 				if (i % 2 == 0)	SetConsoleTextAttribute(hConsole, 112);
 				else SetConsoleTextAttribute(hConsole, 128);
-				cout << it->first << "=" << it->second << ", ";
+				std::cout << it->first << "=" << it->second << ", ";
 			}
-			cout << endl;
+			std::cout << std::endl;
 		}
 	}
 	else if (other[data_start] == _WHERE_CMD)
 	{
-		std::map<string, string>::iterator itr_table;
+		std::map<std::string, std::string>::iterator itr_table;
 		for (size_t i = 0; i < iter->second.size(); i++)
 		{
 			bool couted = false;
-			for (map<string, string>::const_iterator it = iter->second[i].begin(); it != iter->second[i].end(); ++it)
+			for (std::map<std::string, std::string>::const_iterator it = iter->second[i].begin(); it != iter->second[i].end(); ++it)
 			{
 				itr_table = iter->second[i].find(get_col_name(other[data_start + 1]));
 				if (itr_table != iter->second[i].end())
@@ -273,25 +273,25 @@ void MySql::show_table(const Query& other)
 					{
 						if(i%2==0)	SetConsoleTextAttribute(hConsole, 112);
 						else SetConsoleTextAttribute(hConsole, 128);
-							cout << it->first << "=" << it->second << ", ";
+							std::cout << it->first << "=" << it->second << ", ";
 							couted = true;
 					}
 			}
 			if (couted)
-				cout << endl;
+				std::cout << std::endl;
 		}
 	}
 	SetConsoleTextAttribute(hConsole, 15);
 }
 int MySql::update(const Query& query)
 {
-	std::map<string, Table>::iterator itr;
+	std::map<std::string, Table>::iterator itr;
 	itr = tables.find(query[name]);
 	int counter = 0;
 	if (itr != tables.end())
 	{
 		Table table = itr->second; //vector of map
-		std::map<string, string>::iterator itr_table;
+		std::map<std::string, std::string>::iterator itr_table;
 		int i = 0;
 		for (; i < table.size(); i++)
 		{
