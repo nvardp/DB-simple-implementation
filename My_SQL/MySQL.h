@@ -7,8 +7,10 @@
 #include <filesystem>
 #include <Windows.h>
 
-namespace fs = std::filesystem;
+using std::cout;
+using std::string;
 
+namespace fs = std::filesystem;
 
 const std::string _EXIT = "exit";
 const std::string _CREATE_CMD = "create"; 

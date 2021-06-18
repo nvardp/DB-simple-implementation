@@ -204,7 +204,7 @@ int MySql::delete_all_found(const Query& query)
 	int counter = 0;
 	if (itr != tables.end())
 	{
-		auto table = itr->second; //vector of map
+		decltype(auto) table = itr->second; //vector of map
 		std::map<std::string, std::string>::iterator itr_table;
 		int i = 0;
 		for (; i < table.size(); i++)
